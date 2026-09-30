@@ -43,6 +43,7 @@ if(NOT MLIR_DIR)
     "PATH, or configure with -DMLIR_DIR=<prefix>/lib/cmake/mlir.")
 endif()
 
+set(MLIR_DIR /home/jandawg/school/cs6475_compilers/llvm-project/build/lib/cmake/mlir)
 find_package(MLIR REQUIRED CONFIG)
 
 message(STATUS "Using MLIRConfig.cmake in ${MLIR_DIR}")
