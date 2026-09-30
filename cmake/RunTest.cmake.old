@@ -1,11 +1,10 @@
-uns the range-analysis plugin over one MLIR input and checks the annotated
-# listing.
+# Runs the plugin over one MLIR input and checks the annotated listing.
 #
-# Expected:
-#   -DMLIR_OPT=
-#   -DPLUGIN=
-#   -DINPUT=
-#   -DCHECKS=
+# Written as a CMake script, rather than a shell script, so the tests need no
+# tool the build did not already need.  That keeps `ctest` working identically
+# on Linux, macOS, and WSL2 -- and on a Windows host, should anyone try.
+#
+# Expected: -DMLIR_OPT= -DPLUGIN= -DINPUT= -DCHECKS=
 
 foreach(required MLIR_OPT PLUGIN INPUT CHECKS)
   if(NOT DEFINED ${required})
@@ -16,9 +15,9 @@ endforeach()
 execute_process(
   COMMAND "${MLIR_OPT}"
           "--load-pass-plugin=${PLUGIN}"
-          "--pass-pipeline=builtin.module(range-analysis)"
+          "--pass-pipeline=builtin.module(zero-analysis)"
           "${INPUT}"
-  OUTPUT_VARIABLE ignored_ir
+  OUTPUT_VARIABLE ignored_ir   # mlir-opt writes the unchanged IR to stdout
   ERROR_VARIABLE annotated
   RESULT_VARIABLE status)
 
@@ -27,27 +26,25 @@ if(NOT status EQUAL 0)
 endif()
 
 # file(STRINGS) leaves a trailing CR on a file checked out with Windows line
-# endings, which is easy to do under WSL2. Normalize rather than fail.
+# endings, which is easy to do under WSL2.  Normalize rather than fail.
 file(STRINGS "${CHECKS}" expectations)
 
 set(failures "")
 foreach(expectation IN LISTS expectations)
   string(REGEX REPLACE "\r$" "" expectation "${expectation}")
-
   if(expectation STREQUAL "" OR expectation MATCHES "^#")
     continue()
   endif()
-
-  # A leading '!' inverts the check.
+  # A leading '!' inverts the check, which is how the test pins down what the
+  # analysis must NOT claim.  An unsound transfer function is a silent bug
+  # otherwise: it still produces plausible-looking output.
   set(inverted FALSE)
-
   if(expectation MATCHES "^!")
     set(inverted TRUE)
     string(SUBSTRING "${expectation}" 1 -1 expectation)
   endif()
 
   string(FIND "${annotated}" "${expectation}" position)
-
   if(inverted AND NOT position EQUAL -1)
     string(APPEND failures "  unexpected: ${expectation}\n")
   elseif(NOT inverted AND position EQUAL -1)
@@ -61,5 +58,4 @@ if(NOT failures STREQUAL "")
     "--- actual ---\n${annotated}")
 endif()
 
-message(STATUS "range-analysis: all expected facts present")
-
+message(STATUS "zero-analysis: all expected facts present")

@@ -9,7 +9,7 @@
 
 using namespace mlir;
 
-namespace zero {
+namespace range {
 
 void printAnnotated(
     Operation *root,
