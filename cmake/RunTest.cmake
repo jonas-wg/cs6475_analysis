@@ -1,4 +1,4 @@
-uns the range-analysis plugin over one MLIR input and checks the annotated
+# runs the range-analysis plugin over one MLIR input and checks the annotated
 # listing.
 #
 # Expected:

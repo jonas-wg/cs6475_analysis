@@ -70,8 +70,8 @@ struct IntRangeAnalysisPass
         return {};
      
       // More constant filtering
-      //if (state.min == state.max)
-      //  return {};
+      if (state.min == state.max)
+        return {};
       
       // prints the top ranges too
       //if (state.isBottom())

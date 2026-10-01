@@ -1,17 +1,12 @@
 module {
   func.func @test(%x : i32) -> i32 {
-    %zero = arith.constant 0 : i32
-    %ten = arith.constant 10 : i32
+    %mask1 = arith.constant 7 : i32
+    %a = arith.andi %x, %mask1 : i32
 
-    %cond = arith.cmpi slt, %x, %ten : i32
-    cf.cond_br %cond, ^yes, ^no
+    %mask2 = arith.constant 3 : i32
+    %b = arith.andi %a, %mask2 : i32
 
-  ^yes:
-    %y = arith.addi %x, %ten : i32
-    return %y : i32
-
-  ^no:
-    return %zero : i32
+    return %b : i32
   }
 }
 
