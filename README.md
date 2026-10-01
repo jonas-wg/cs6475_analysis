@@ -34,6 +34,9 @@ I used with my analysis in this repo.
 
 I was able to conclude facts about sqlite3.c using my range-analysis that I believe are nontrivial.
 I made an effort to filter out any constants that would show up as the integer range `[x, x] or (5, 5)`.
+The possible ranges of integer values change as different bitwise operations are performed on them,
+often reducing their size from the maximum uint32\_t value, for example. If multiple bitwise operations
+happen in a "chain" of operations, that information should be correctly maintained.
 
 I concluded ranges about many non constants and for all of my implemented bitwise operation transfer
 functions. In the Plugin.cpp, I added string "uniqkey" to my output to grep my results easier. Here are 
