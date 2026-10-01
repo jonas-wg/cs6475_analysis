@@ -18,12 +18,8 @@ namespace range {
 		ArrayRef<const RangeLattice *> operands,
 		ArrayRef<RangeLattice *> results) {
 
-	    // Raising a result to top means:
-	    //
-	    //   "We don't know anything useful about this operation."
-	    //
-	    // This is always a safe answer for an analysis that is trying to
-	    // over-approximate the possible values.
+	    // Raising a result to top says "this operation could produce anything",
+	    // which is always a sound answer and is what every unhandled case does.
 	    auto unknown = [&] {
 		setAllToEntryStates(results);
 		return success();
@@ -37,62 +33,12 @@ namespace range {
 
 	    RangeLattice *result = results[0];
 
-	    // -------------------------------------------------------------------------
-	    // Rule 1: constants
-	    //
-	    //     %x = arith.constant 42 : i32
-	    //
-	    // produces:
-	    //
-	    //     %x -> [42, 42]
-	    // -------------------------------------------------------------------------
-
+	    // Getting rid of constants
 	    IntegerAttr value;
 	    if (matchPattern(op, m_Constant(&value))) {
 		int64_t constant = value.getValue().getSExtValue();
 
 		RangeState state = RangeState::constant(constant);
-
-		propagateIfChanged(result, result->join(state));
-		return success();
-	    }
-
-	    // -------------------------------------------------------------------------
-	    // Rule 2: integer addition
-	    //
-	    //     %z = arith.addi %x, %y : i32
-	    //
-	    // If:
-	    //
-	    //     %x -> [10, 20]
-	    //     %y -> [3, 5]
-	    //
-	    // then:
-	    //
-	    //     %z -> [13, 25]
-	    //
-	    // because the smallest possible result is 10 + 3 and the largest possible
-	    // result is 20 + 5.
-	    // -------------------------------------------------------------------------
-
-	    if (isa<arith::AddIOp>(op)) {
-		RangeState lhs = operands[0]->getValue();
-		RangeState rhs = operands[1]->getValue();
-
-		// The solver has not established useful information about one of the
-		// operands yet. Wait for the operand lattice to change.
-		if (lhs.isBottom() || rhs.isBottom())
-		    return success();
-
-		// If either operand is completely unknown, the result is unknown.
-		if (lhs.isTop() || rhs.isTop()) {
-		    propagateIfChanged(result, result->join(RangeState::top()));
-		    return success();
-		}
-
-		RangeState state(
-			lhs.min + rhs.min,
-			lhs.max + rhs.max);
 
 		propagateIfChanged(result, result->join(state));
 		return success();
@@ -119,10 +65,7 @@ namespace range {
 		return unknown();
 	    }
 
-	    // Bitwise OR.
-	    //
-	    // For now, only handle small, fully bounded ranges by enumerating all
-	    // possible pairs. This is simple and sound.
+	    // Bitwise OR with constant mask.
 	    if (isa<LLVM::OrOp>(op)) {
 		RangeState lhs = operands[0]->getValue();
 		RangeState rhs = operands[1]->getValue();
@@ -156,9 +99,7 @@ namespace range {
 		return success();
 	    }
 
-	    // Bitwise XOR.
-	    //
-	    // Same strategy: enumerate small bounded ranges.
+	    // Bitwise XOR with constant mask.
 	    if (isa<LLVM::XOrOp>(op)) {
 		RangeState lhs = operands[0]->getValue();
 		RangeState rhs = operands[1]->getValue();
@@ -192,12 +133,7 @@ namespace range {
 		return success();
 	    }
 
-	    // Logical left shift.
-	    //
-	    // Initial conservative version:
-	    // - shift amount must be known
-	    // - value must be non-negative
-	    // - result must remain representable
+	    // Logical left shift. Nonnegative, known mask value.
 	    if (isa<LLVM::ShlOp>(op)) {
 		RangeState value = operands[0]->getValue();
 		RangeState amount = operands[1]->getValue();
@@ -217,13 +153,12 @@ namespace range {
 		if (shift < 0 || shift >= 32)
 		    return unknown();
 
-		// Keep the first implementation simple and sound.
 		if (value.min < 0)
 		    return unknown();
 
 		int64_t factor = int64_t{1} << shift;
 
-		// Avoid signed overflow.
+		// Handle signed overflow.
 		if (value.max > std::numeric_limits<int32_t>::max() / factor)
 		    return unknown();
 
@@ -235,12 +170,7 @@ namespace range {
 		return success();
 	    }
 
-	    // Bitwise negation.
-	    //
-	    // MLIR represents ~x conveniently as:
-	    //     x ^ -1
-	    //
-	    // Therefore recognize XOR with the constant -1.
+	    // Bitwise negation. Done with assumed XOr -1 implementation.
 	    if (auto xorOp = dyn_cast<arith::XOrIOp>(op)) {
 		RangeState lhs = operands[0]->getValue();
 		RangeState rhs = operands[1]->getValue();
@@ -256,12 +186,6 @@ namespace range {
 		    if (lhs.isTop())
 			return unknown();
 
-		    // ~x == -x - 1
-		    //
-		    // If x ∈ [a,b], then
-		    // ~x ∈ [-b-1, -a-1].
-		    //
-		    // Check for overflow before doing the arithmetic.
 		    if (lhs.min == std::numeric_limits<int64_t>::min() ||
 			    lhs.max == std::numeric_limits<int64_t>::min())
 			return unknown();
@@ -275,7 +199,7 @@ namespace range {
 		}
 	    }
 
-	    // We don't know how to reason about this operation.
+	    // Unable to conclude anything
 	    return unknown();
 	}
 
