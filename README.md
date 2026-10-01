@@ -39,4 +39,17 @@ I concluded ranges about many non constants and for all of my implemented bitwis
 functions. In the Plugin.cpp, I added string "uniqkey" to my output to grep my results easier. Here are 
 some snippets from some of the different runs I did:
 
-`/.run.sh sqlite3.mlir | grep llvm.and | grep uniqkey`
+`./run.sh sqlite3.mlir | grep llvm.and | grep uniqkey`
+```
+    %85 = llvm.and %84, %19 : i32 // %85 uniqkey is [0, 32767]
+    %17 = llvm.and %16, %1 : i32 // %17 uniqkey is [0, 12]
+    %22 = llvm.and %21, %0 : i32 // %22 uniqkey is [0, 1]
+    %64 = llvm.and %63, %12 : i32 // %64 uniqkey is [0, 15]
+    %73 = llvm.and %72, %13 : i32 // %73 uniqkey is [0, 192]
+    %76 = llvm.and %75, %10 : i32 // %76 uniqkey is [0, 3]
+    %134 = llvm.and %133, %0 : i32 // %134 uniqkey is [0, 1]
+    %145 = llvm.and %144, %24 : i32 // %145 uniqkey is [0, 18]
+    %155 = llvm.and %154, %25 : i32 // %155 uniqkey is [0, 15]
+    %174 = llvm.and %173, %7 : i32 // %174 uniqkey is [0, 16]
+    %20 = llvm.and %19, %0 : i32 // %20 uniqkey is [0, 1]
+```
