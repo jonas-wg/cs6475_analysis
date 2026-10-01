@@ -87,3 +87,6 @@ some snippets from some of the different runs I did:
     %66 = llvm.shl %65, %12 : i32 // %66 uniqkey is [0, 65536]
     %46 = llvm.shl %45, %8 : i32 // %46 uniqkey is [0, 16711680]
 ```
+
+I think it would be interesting to expand this to the rest of the bitwise operations. Also, for something
+with more interesting/impactful results, anlyzing ranges across branches would be a good next step.
