@@ -49,8 +49,6 @@ struct RangeState {
   /// [a, b] U [c, d] in the abstract domain becomes:
   ///
   /// [min(a,c), max(b,d)]
-  ///
-  /// Note that this is an interval hull, not an exact set union.
   static RangeState join(const RangeState &lhs,
                          const RangeState &rhs) {
     if (lhs.isBottom())
