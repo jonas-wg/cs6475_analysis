@@ -53,3 +53,18 @@ some snippets from some of the different runs I did:
     %174 = llvm.and %173, %7 : i32 // %174 uniqkey is [0, 16]
     %20 = llvm.and %19, %0 : i32 // %20 uniqkey is [0, 1]
 ```
+
+`./run.sh sqlite3.mlir | grep llvm.or | grep uniqkey`
+```
+TODO
+```
+
+`./run.sh sqlite3.mlir | grep llvm.xor | grep uniqkey`
+```
+TODO
+```
+
+`./run.sh sqlite3.mlir | grep llvm.shl | grep uniqkey`
+```
+TODO
+```
