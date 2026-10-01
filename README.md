@@ -56,15 +56,28 @@ some snippets from some of the different runs I did:
 
 `./run.sh sqlite3.mlir | grep llvm.or | grep uniqkey`
 ```
-TODO
+  %311 = llvm.or %20, %310 : i32 // %311 uniqkey is [128, 191]
+  %290 = llvm.or %289, %288 : i8 // %290 uniqkey is [0, 255]
+  %792 = llvm.or %791, %0 : i32 // %792 uniqkey is [1, 3]
+  %327 = llvm.or %39, %326 : i64 // %327 uniqkey is [3, 59]
+  %124 = llvm.or %123, %3 : i32 // %124 uniqkey is [12, 252]
 ```
 
 `./run.sh sqlite3.mlir | grep llvm.xor | grep uniqkey`
 ```
-TODO
+    %139 = llvm.xor %138, %19 : i32 // %139 uniqkey is [-33, -1]
+    %700 = llvm.xor %699, %20 : i32 // %700 uniqkey is [-33, -1]
+    %53 = llvm.xor %52, %8 : i32 // %53 uniqkey is [-33, -1]
 ```
 
 `./run.sh sqlite3.mlir | grep llvm.shl | grep uniqkey`
 ```
-TODO
+    %82 = llvm.shl %81, %4 : i16 // %82 uniqkey is [0, 12]
+    %96 = llvm.shl %95, %12 : i16 // %96 uniqkey is [0, 256]
+    %128 = llvm.shl %127, %18 : i16 // %128 uniqkey is [0, 32]
+    %147 = llvm.shl %146, %24 : i16 // %147 uniqkey is [0, 12]
+    %485 = llvm.shl %484, %13 : i8 // %485 uniqkey is [0, 6]
+    %26 = llvm.shl %25, %5 : i32 // %26 uniqkey is [0, 65536]
+    %66 = llvm.shl %65, %12 : i32 // %66 uniqkey is [0, 65536]
+    %46 = llvm.shl %45, %8 : i32 // %46 uniqkey is [0, 16711680]
 ```
