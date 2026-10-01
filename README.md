@@ -30,6 +30,9 @@ clang -S -emit-llvm -o - input.c | mlir-translate --import-llvm
 I ran on the one-file sqlite3.c from the sqlite open source repo. I've included the .c and .mlir
 I used with my analysis in this repo.
 
+I also created a file `range.mlir` in the `test` directory that shows some contrived mlir code for
+these types of bitwise operations I'm targeting.
+
 ## Results
 
 I was able to conclude facts about sqlite3.c using my range-analysis that I believe are nontrivial.
